@@ -1,26 +1,40 @@
 import React from 'react';
-import { FileText, Upload, Settings } from 'lucide-react';
+import { FileText, LogOut } from 'lucide-react';
+import { useAuthStore } from '../store/useAuthStore';
+import toast from 'react-hot-toast';
 
 export const Header = () => {
+  const { user, signOut } = useAuthStore();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      toast.success('Signed out successfully');
+    } catch (error) {
+      toast.error('Failed to sign out');
+    }
+  };
+
   return (
-    <header className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center space-x-3">
-            <FileText className="w-8 h-8" />
-            <span className="text-xl font-bold">ResumeAI</span>
+    <header className="bg-white shadow">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <FileText className="h-8 w-8 text-purple-600" />
+            <span className="ml-2 text-xl font-bold text-gray-900">ResumeAI</span>
           </div>
-          
-          <nav className="flex space-x-4">
-            <button className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-white/10 transition-colors">
-              <Upload className="w-5 h-5" />
-              <span>Upload</span>
-            </button>
-            <button className="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-white/10 transition-colors">
-              <Settings className="w-5 h-5" />
-              <span>Settings</span>
-            </button>
-          </nav>
+          {user && (
+            <div className="flex items-center space-x-4">
+              <span className="text-sm text-gray-600">{user.email}</span>
+              <button
+                onClick={handleSignOut}
+                className="flex items-center px-3 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                Sign Out
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </header>

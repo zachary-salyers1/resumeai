@@ -1,16 +1,35 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Header } from './components/Header';
 import { UploadZone } from './components/UploadZone';
 import { JobDescription } from './components/JobDescription';
-import { AnalysisResult } from './components/AnalysisResult';
+import { Analysis } from './components/Analysis';
+import { ResumeVersions } from './components/ResumeVersions';
+import { Auth } from './components/Auth';
 import { Toaster } from 'react-hot-toast';
 import { useResumeStore } from './store/useResumeStore';
+import { useAuthStore } from './store/useAuthStore';
+import { supabase } from './lib/supabase';
 
 function App() {
-  const analysisResult = useResumeStore((state) => state.analysisResult);
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    // Set up auth listener
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      useAuthStore.setState({ user: session?.user ?? null, loading: false });
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      useAuthStore.setState({ user: session?.user ?? null, loading: false });
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       <Toaster position="top-right" />
       <Header />
       
@@ -25,48 +44,23 @@ function App() {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Upload Resume</h2>
+        {!user ? (
+          <div className="max-w-md mx-auto">
+            <Auth />
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="space-y-8">
               <UploadZone />
+              <JobDescription />
             </div>
-            {analysisResult && <AnalysisResult />}
+            <div className="space-y-8">
+              <Analysis />
+              <ResumeVersions />
+            </div>
           </div>
-          
-          <JobDescription />
-        </div>
+        )}
       </main>
-
-      <footer className="mt-16 bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4">ResumeAI</h3>
-              <p className="text-gray-400">
-                Empowering job seekers with AI-powered resume optimization.
-              </p>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Features</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>Resume Analysis</li>
-                <li>ATS Optimization</li>
-                <li>Multiple Versions</li>
-                <li>Custom Templates</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-gray-400">
-                <li>Documentation</li>
-                <li>FAQ</li>
-                <li>Contact Us</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

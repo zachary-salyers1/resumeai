@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { AnalysisResult } from '../lib/ai/resumeAiAnalyzer';
 
 interface ResumeState {
   resumeText: string | null;
@@ -8,13 +9,6 @@ interface ResumeState {
   setJobDescription: (text: string) => void;
   setAnalysisResult: (result: AnalysisResult) => void;
   reset: () => void;
-}
-
-interface AnalysisResult {
-  score: number;
-  matchedKeywords: string[];
-  missingKeywords: string[];
-  suggestions: string[];
 }
 
 export const useResumeStore = create<ResumeState>((set) => ({
